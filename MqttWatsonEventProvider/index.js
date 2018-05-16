@@ -16,7 +16,7 @@
 'use strict';
 
 const express = require('express');
-const Cloudant = require('cloudant');
+const Cloudant = require('@cloudant/cloudant');
 const FeedController = require('./lib/feed_controller.js');
 
 // Setup express for handling HTTP requests
@@ -29,13 +29,12 @@ let creds = {};
 if (process.env.VCAP_SERVICES) {
   //const appEnv = require('cfenv').getAppEnv();
   //creds = appEnv.getServiceCreds('cloudantNoSQLDB');
-  creds.username = JSON.parse(process.env.VCAP_SERVICES).cloudantNoSQLDB[0].credentials.username 
-  creds.password = JSON.parse(process.env.VCAP_SERVICES).cloudantNoSQLDB[0].credentials.password 
+  creds.username = JSON.parse(process.env.VCAP_SERVICES).cloudantNoSQLDB[0].credentials.username
+  creds.password = JSON.parse(process.env.VCAP_SERVICES).cloudantNoSQLDB[0].credentials.password
 } else if (process.env.CLOUDANT_USERNAME && process.env.CLOUDANT_PASSWORD) {
   creds.username = process.env.CLOUDANT_USERNAME;
   creds.password = process.env.CLOUDANT_PASSWORD;
 }
-
 if (!creds.username || !creds.password) {
   console.error('Missing Cloudant credentials...');
   process.exit(1);

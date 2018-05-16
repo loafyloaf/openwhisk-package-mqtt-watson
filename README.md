@@ -75,7 +75,7 @@ This service can be hosted as a Cloud Foundry application. To deploy on IBM Blue
   			"map": "function (doc) {\n  emit(doc.url + '#' + doc.topic, 1);\n}"
   		},
   		"host_topic_triggers": {
-  			"map": "function (doc) {\n  emit(doc.url + '#' + doc.topic, {trigger: doc._id, username: doc.username, password: doc.password});\n}"
+  			"map": "function (doc) {\n  emit(doc.url + '#' + doc.topic, {trigger: doc._id, username: doc.openWhiskUsername, password: doc.openWhiskPassword});\n}"
   		},
   		"all": {
   			"map": "function (doc) {\n  emit(doc._id, doc.url + '#' + doc.topic);\n}"

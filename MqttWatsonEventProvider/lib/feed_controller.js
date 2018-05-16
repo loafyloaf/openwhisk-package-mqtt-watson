@@ -19,6 +19,7 @@ const mqtt = require('mqtt');
 const openwhisk = require('openwhisk');
 const MQTTSubscriptionMgr = require('./mqtt_subscription_manager.js');
 const TriggerStore = require('./trigger_store.js');
+var whisk_auth
 
 class FeedController {
   constructor(db, ow_endpoint) {
@@ -69,7 +70,8 @@ class FeedController {
     console.log(`Firing trigger: /${namespace}/${name}`, params);
     var ow = openwhisk({
       api: this.ow_endpoint,
-      api_key: `${trigger.openWhiskUsername}:${trigger.openWhiskPassword}`,
+      api_key: `${whisk_auth}`,
+      // api_key: `${trigger.openWhiskUsername}:${trigger.openWhiskPassword}`,
       namespace: namespace
     });
     ow.triggers.invoke({
@@ -82,6 +84,7 @@ class FeedController {
   // trigger: trigger (namespace/name), url, topic, openWhiskUsername, openWhiskPassword, watsonUsername, watsonPassword, watsonclient
   add_trigger(trigger) {
     const mgr = this.mqtt_subscription_manager;
+    whisk_auth=`${trigger.openWhiskUsername}:${trigger.openWhiskPassword}`
     return this.trigger_store.add(trigger).then(() => {
       mgr.subscribe(trigger.url, trigger.topic, trigger.watsonUsername, trigger.watsonPassword, trigger.watsonclient);
       if (mgr.is_connected(trigger.url)) {
