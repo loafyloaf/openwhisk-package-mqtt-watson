@@ -75,7 +75,7 @@ This service can be hosted as a Cloud Foundry application. To deploy on IBM Blue
   			"map": "function (doc) {\n  emit(doc.url + '#' + doc.topic, 1);\n}"
   		},
   		"host_topic_triggers": {
-  			"map": "function (doc) {\n  emit(doc.url + '#' + doc.topic, {trigger: doc._id, username: doc.openWhiskUsername, password: doc.openWhiskPassword});\n}"
+        "map": "function (doc) {\n  emit(doc.url + '#' + doc.topic, {trigger: doc._id, username: doc.username, password: doc.password});\n}"
   		},
   		"all": {
   			"map": "function (doc) {\n  emit(doc._id, doc.url + '#' + doc.topic);\n}"
@@ -118,19 +118,19 @@ To uninstall:
 To use this trigger feed, you need to pass all of the required parameters (refer to the table above)
 
 ```bash
-$WSK_CLI trigger create subscription-event-trigger \
+$WSK_CLI trigger create mqttMsgReceived \
   --feed mqtt-watson/feed-action \
-  --param topic "$WATSON_TOPIC" \
-  --param url "ssl://$WATSON_TEAM_ID.messaging.internetofthings.ibmcloud.com:8883" \
-  --param username "$WATSON_username" \
-  --param password "$WATSON_password" \
-  --param client "$WATSON_client"
+  --param topic "iot-2/type/${IOT_DEVICE_TYPE}/id/${IOT_DEVICE_ID}/evt/fromClient/fmt/json" \
+  --param url "ssl://${IOT_ORG}.messaging.internetofthings.ibmcloud.com:8883" \
+  --param username "${IOT_API_KEY}" \
+  --param password "${IOT_AUTH_TOKEN}" \
+  --param client "a:${IOT_ORG}:wskmqttsub_$(date +%s)"
 ```
 
 For example:
 
 ```bash
-$WSK_CLI trigger create subscription-event-trigger \
+$WSK_CLI trigger create mqttMsgReceived \
   --feed mqtt-watson/feed-action \
   --param topic "iot-2/type/+/id/+/evt/+/fmt/json" \
   --param url "ssl://12e45g.messaging.internetofthings.ibmcloud.com:8883" \
@@ -143,7 +143,9 @@ $WSK_CLI trigger create subscription-event-trigger \
 
 1. Create a new trigger, using the example above.
 
-2. See the [`handler.js`](actions/handler.js) file that reacts to the trigger events with action code below:
+2. Bind an action to the trigger via a "Rule"
+`bx wsk rule create mqttRule mqttMsgReceived translateText`
+<!-- 2. See the [`handler.js`](actions/handler.js) file that reacts to the trigger events with action code below:
 
   ```javascript
   function main(params) {
@@ -155,22 +157,28 @@ $WSK_CLI trigger create subscription-event-trigger \
   }
   ```
 
-  Upload the action: `$WSK_CLI action create handler actions/handler.js`
+  Upload the action: `$WSK_CLI action create handler actions/handler.js` -->
 
-3. Create the rule that associate the trigger and the action: `$WSK_CLI rule create handle-topic-message-rule subscription-event-trigger handler`
+<!-- 3. Create the rule that associate the trigger and the action:  -->
 
 4. Post a message to the MQTT topic that triggers events you have subscribed to:
 
   ```json
   {
-   "serial": "aaaabbbbcccc",
-   "reading": "15"
+    "d" : {
+      "sourceLanguage" : "en",
+      "payload" : "test",
+      "client": "client1"
+    }
   }
   ```
 
-5. Verify the action was invoked by checking the most recent activations:
+5. Verify the action was invoked by checking the Cloud Functions monitor or by running:
+  ```bash
+  bx wsk activation poll
+  ```
 
-  `$WSK_CLI activation list --limit 1 handler`
+  <!-- `$WSK_CLI activation list --limit 1 handler`
 
   ```
   activations
@@ -183,15 +191,15 @@ $WSK_CLI trigger create subscription-event-trigger \
   {
    "payload": "Device with serial: 123456 emitted a reading: 15"
   }
-  ```
+  ``` -->
 
   To delete the rule, trigger, and action:
 
   ```bash
-  $WSK_CLI rule disable handle-topic-message-rule
-  $WSK_CLI rule delete handle-topic-message-rule
-  $WSK_CLI trigger delete subscription-event-trigger
-  $WSK_CLI action delete handler
+  bx wsk rule disable mqttRule
+  bx wsk rule delete mqttRule
+  bx wsk trigger delete mqttMsgReceived
+  bx wsk action delete translateText
   ```
 
 ## Contributing
