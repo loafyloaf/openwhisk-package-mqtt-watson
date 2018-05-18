@@ -9,13 +9,12 @@ cd MqttWatsonEventProvider/ && cf push
 # TODO, the mqtt-watson app doesn't receover well, the Cloudant Document with ID <uuid>/msgReceived has to be deleted before restarting/redeploying
 cd ..
 sleep 5
-export provider_url=$(cf apps | grep mqtt-watson | awk '{print $6}' | tr -d ',' | xargs echo -n )
+export provider_url="$(cf apps | grep mqtt-watson | awk '{print $6}' | tr -d ',' | xargs echo -n )"
 # Clean up / Deploy again
-# ./uninstall.sh openwhisk.ng.bluemix.net $(wsk property get --auth | awk '{print $3'}) "wsk"
+# ./uninstall.sh openwhisk.ng.bluemix.net $(wsk property get --auth | awk '{print $3}') "wsk"
 # wsk trigger delete subscription-event-trigger
-sleep 1
-./install.sh openwhisk.ng.bluemix.net $(wsk property get --auth | awk '{print $3'}) "wsk" "http://${provider_url}/mqtt-watson"
-sleep 1
+./install.sh openwhisk.ng.bluemix.net "$(wsk property get --auth | awk '{print $3'})" "wsk" "http://${provider_url}/mqtt-watson"
+sleep 5
 echo "Create trigger that'll be invoked each time a message is received at given topic"
 # wsk trigger delete subscription-event-trigger
 # wsk package delete mqtt-watson
